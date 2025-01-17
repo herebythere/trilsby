@@ -16,4 +16,3 @@
 //   password_hash TEXT (params)
 //   verified TEXT or NULL (Timestamp)
 //
-
