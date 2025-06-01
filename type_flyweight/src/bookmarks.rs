@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-struct Bookmark {
+pub struct Bookmark {
     pub id: u64,
     pub people_id: u64,
     pub url: String,

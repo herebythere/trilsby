@@ -8,7 +8,7 @@ pub struct Tags {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub TagToBookmark {
+pub struct TagToBookmark {
     id: u64,
     tag_id: u64,
     bookmark_id: u64,
