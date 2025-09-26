@@ -1,7 +1,7 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
 use type_flyweight::tags::TagKind;
 
-fn get_contact_kind_from_row(row: &Row) -> Result<TagKind, RusqliteError> {
+fn get_tag_kind_from_row(row: &Row) -> Result<TagKind, RusqliteError> {
     Ok(TagKind {
         id: row.get(0)?,
         kind: row.get(1)?,
@@ -41,14 +41,14 @@ pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKi
         _ => return Err("cound not prepare statement".to_string()),
     };
 
-    let mut contact_kind_iter = match stmt.query_map((id, kind), get_contact_kind_from_row) {
+    let mut tag_kind_iter = match stmt.query_map((id, kind), get_tag_kind_from_row) {
         Ok(kind_iter) => kind_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_kind_maybe) = contact_kind_iter.next() {
-        if let Ok(contact_kind) = contact_kind_maybe {
-            return Ok(Some(contact_kind));
+    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
+        if let Ok(tag_kind) = tag_kind_maybe {
+            return Ok(Some(tag_kind));
         }
     }
 
@@ -72,14 +72,14 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, String> {
         _ => return Err("cound not prepare statement".to_string()),
     };
 
-    let mut contact_kind_iter = match stmt.query_map([id], get_contact_kind_from_row) {
-        Ok(contact_kind) => contact_kind,
+    let mut tag_kind_iter = match stmt.query_map([id], get_tag_kind_from_row) {
+        Ok(tag_kind) => tag_kind,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_kind_maybe) = contact_kind_iter.next() {
-        if let Ok(contact_kind) = contact_kind_maybe {
-            return Ok(Some(contact_kind));
+    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
+        if let Ok(tag_kind) = tag_kind_maybe {
+            return Ok(Some(tag_kind));
         }
     }
 
@@ -104,14 +104,14 @@ pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<TagKind>
         _ => return Err("cound not prepare statement".to_string()),
     };
 
-    let mut contact_kind_iter = match stmt.query_map([kind], get_contact_kind_from_row) {
+    let mut tag_kind_iter = match stmt.query_map([kind], get_tag_kind_from_row) {
         Ok(kind_iter) => kind_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_kind_maybe) = contact_kind_iter.next() {
-        if let Ok(contact_kind) = contact_kind_maybe {
-            return Ok(Some(contact_kind));
+    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
+        if let Ok(tag_kind) = tag_kind_maybe {
+            return Ok(Some(tag_kind));
         }
     }
 
