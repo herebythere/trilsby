@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct TagKind {
-    id: u64,
-    kind: String,
-    deleted_at: u64,
+    pub id: u64,
+    pub kind: String,
+    pub deleted_at: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
