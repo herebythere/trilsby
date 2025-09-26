@@ -1,3 +1,3 @@
-# trilsby-api
+# Trilsby
 
-A database interface as an API in rust.
+Share bookmarks and bounce around the internet.

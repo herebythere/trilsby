@@ -4,10 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct BookmarkList {
     pub id: u64,
     pub people_id: u64,
-    pub title: String,
-    pub description: Option<String>,
-    pub image_uri: Option<String>,
-    pub media_uri: Option<String>,
     pub deleted_at: u64,
 }
 
