@@ -2,10 +2,6 @@ use rusqlite::{Connection, Error as RusqliteError, Result, Row};
 
 use type_flyweight::tags::Tag;
 
-// Table has unique constraint on tag_kind_id and CONTENT
-// This requires queries at scale to "get" all possible from all shards
-// if searching by contact
-
 fn get_tag_from_row(row: &Row) -> Result<Tag, RusqliteError> {
     Ok(Tag {
         id: row.get(0)?,

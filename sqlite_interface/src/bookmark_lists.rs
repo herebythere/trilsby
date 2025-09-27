@@ -1,21 +1,19 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-use type_flyweight::bookmarks::Bookmark;
+use type_flyweight::bookmark_lists::BookmarkList;
 
-fn get_bookmark_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
-    Ok(Bookmark {
+fn get_bookmark_list_from_row(row: &Row) -> Result<BookmarkList, RusqliteError> {
+    Ok(BookmarkList {
         id: row.get(0)?,
         people_id: row.get(1)?,
-        url: row.get(2)?,
         deleted_at: row.get(3)?,
     })
 }
 
 pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
-        "CREATE TABLE IF NOT EXISTS bookmarks (
+        "CREATE TABLE IF NOT EXISTS bookmark_lists (
             id INTEGER PRIMARY KEY,
             people_id INTEGER NOT NULL,
-            url TEXT NOT NULL UNIQUE,
             deleted_at INTEGER
         )",
         (),
@@ -32,14 +30,13 @@ pub fn create(
     conn: &mut Connection,
     id: u64,
     people_id: u64,
-    url: &str,
-) -> Result<Option<Bookmark>, String> {
+) -> Result<Option<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
-        INSERT INTO bookmarks
-            (id, people_id, url)
+        INSERT INTO bookmark_lists
+            (id, people_id)
         VALUES
-            (?1, ?2, ?3)
+            (?1, ?2)
         RETURNING
             *
     ",
@@ -48,7 +45,7 @@ pub fn create(
         _ => return Err("cound not prepare create statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((id, people_id, url), get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map((id, people_id), get_bookmark_list_from_row) {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
@@ -62,13 +59,13 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> {
+pub fn read(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
             *
         FROM
-            bookmarks
+            bookmark_lists
         WHERE
             deleted_at IS NULL
             AND
@@ -79,7 +76,7 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> 
         _ => return Err("cound not prepare read statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([id], get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map([id], get_bookmark_list_from_row) {
         Ok(bookmark) => bookmark,
         Err(e) => return Err(e.to_string()),
     };
@@ -93,24 +90,27 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> 
     Ok(None)
 }
 
-pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<Bookmark>, String> {
+pub fn read_by_people_id(
+    conn: &mut Connection,
+    people_id: &str,
+) -> Result<Option<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
             *
         FROM
-            bookmarks
+            bookmark_lists
         WHERE
             deleted_at IS NULL
             AND
-            kind = ?1
+            people_id = ?1
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_kind statement".to_string()),
+        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([kind], get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map([people_id], get_bookmark_list_from_row) {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
