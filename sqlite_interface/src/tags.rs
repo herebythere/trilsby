@@ -53,13 +53,11 @@ pub fn create(
         _ => return Err("failed to create a contact".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map(
-        (id, people_id, tag_kind_id, bookmark_id),
-        get_tag_from_row,
-    ) {
-        Ok(tag_iter) => tag_iter,
-        Err(e) => return Err(e.to_string()),
-    };
+    let mut tag_iter =
+        match stmt.query_map((id, people_id, tag_kind_id, bookmark_id), get_tag_from_row) {
+            Ok(tag_iter) => tag_iter,
+            Err(e) => return Err(e.to_string()),
+        };
 
     if let Some(tag_maybe) = tag_iter.next() {
         if let Ok(tag) = tag_maybe {
@@ -101,10 +99,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
     Ok(None)
 }
 
-pub fn read_by_tag_kind_id(
-    conn: &mut Connection,
-    tag_kind_id: u64,
-) -> Result<Option<Tag>, String> {
+pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
