@@ -142,3 +142,38 @@ pub fn read_by_people_id(
 
     Ok(None)
 }
+
+pub fn read_by_bookmark_list_id(
+    conn: &mut Connection,
+    bookmark_list_id: &str,
+) -> Result<Option<BookmarkListToBookmark>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            bookmark_list_to_bookmark
+        WHERE
+            deleted_at IS NULL
+            AND
+            bookmark_list_id = ?1
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("cound not prepare read_by_bookmark_list_id statement".to_string()),
+    };
+
+    let mut bookmark_list_to_bookmark_iter =
+        match stmt.query_map([bookmark_list_id], get_bookmark_list_to_bookmark_from_row) {
+            Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+            Err(e) => return Err(e.to_string()),
+        };
+
+    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
+        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
+            return Ok(Some(bookmark_list_to_bookmark));
+        }
+    }
+
+    Ok(None)
+}

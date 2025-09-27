@@ -22,7 +22,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     );
 
     if let Err(e) = results {
-        return Err("roles table error: \n".to_string() + &e.to_string());
+        return Err("bookmarks table error: \n".to_string() + &e.to_string());
     }
 
     Ok(())

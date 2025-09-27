@@ -13,7 +13,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS tag_kinds (
             id INTEGER PRIMARY KEY,
-            tag_kind TEXT NOT NULL UNIQUE,
+            kind TEXT NOT NULL UNIQUE,
             deleted_at INTEGER
         )",
         (),
@@ -55,7 +55,7 @@ pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKi
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, String> {
+pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
