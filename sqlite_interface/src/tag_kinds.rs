@@ -13,7 +13,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS tag_kinds (
             id INTEGER PRIMARY KEY,
-            kind TEXT NOT NULL UNIQUE,
+            tag_kind TEXT NOT NULL UNIQUE,
             deleted_at INTEGER
         )",
         (),

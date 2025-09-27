@@ -62,7 +62,9 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> {
+// read all (connection, limit, offset)
+
+pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -76,7 +78,7 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> 
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read statement".to_string()),
+        _ => return Err("cound not prepare read_by_id statement".to_string()),
     };
 
     let mut bookmark_iter = match stmt.query_map([id], get_bookmark_from_row) {
@@ -93,7 +95,10 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> 
     Ok(None)
 }
 
-pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<Bookmark>, String> {
+pub fn read_by_people_id(
+    conn: &mut Connection,
+    people_id: u64,
+) -> Result<Option<Bookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -103,14 +108,14 @@ pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<Bookmark
         WHERE
             deleted_at IS NULL
             AND
-            kind = ?1
+            people_id = ?1
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_kind statement".to_string()),
+        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([kind], get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map([people_id], get_bookmark_from_row) {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };

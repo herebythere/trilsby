@@ -73,7 +73,10 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<BookmarkListToBookmark>, String> {
+pub fn read_by_id(
+    conn: &mut Connection,
+    id: u64,
+) -> Result<Option<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -87,12 +90,12 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<BookmarkListToBookm
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read statement".to_string()),
+        _ => return Err("cound not prepare read_by_id statement".to_string()),
     };
 
     let mut bookmark_list_to_bookmark_iter =
         match stmt.query_map([id], get_bookmark_list_to_bookmark_from_row) {
-            Ok(bookmark_list_to_bookmark) => bookmark,
+            Ok(bookmark_list_to_bookmark) => bookmark_list_to_bookmark,
             Err(e) => return Err(e.to_string()),
         };
 
