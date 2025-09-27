@@ -6,7 +6,7 @@ use type_flyweight::tags::Tag;
 // This requires queries at scale to "get" all possible from all shards
 // if searching by contact
 
-fn get_contact_from_row(row: &Row) -> Result<Tag, RusqliteError> {
+fn get_tag_from_row(row: &Row) -> Result<Tag, RusqliteError> {
     Ok(Tag {
         id: row.get(0)?,
         people_id: row.get(1)?,
@@ -60,15 +60,15 @@ pub fn create(
 
     let mut tag_iter = match stmt.query_map(
         (id, people_id, tag_kind_id, content, verified_at),
-        get_contact_from_row,
+        get_tag_from_row,
     ) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_maybe) = tag_iter.next() {
-        if let Ok(contact) = contact_maybe {
-            return Ok(Some(contact));
+    if let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            return Ok(Some(tag));
         }
     }
 
@@ -92,14 +92,14 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
         _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map([id], get_contact_from_row) {
+    let mut tag_iter = match stmt.query_map([id], get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_maybe) = tag_iter.next() {
-        if let Ok(contact) = contact_maybe {
-            return Ok(Some(contact));
+    if let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            return Ok(Some(tag));
         }
     }
 
@@ -129,14 +129,14 @@ pub fn read_by_kind_id_and_content(
         _ => return Err("failed to read a contact by id".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map((tag_kind_id, content), get_contact_from_row) {
+    let mut tag_iter = match stmt.query_map((tag_kind_id, content), get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(contact_maybe) = tag_iter.next() {
-        if let Ok(contact) = contact_maybe {
-            return Ok(Some(contact));
+    if let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            return Ok(Some(tag));
         }
     }
 
