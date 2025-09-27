@@ -41,7 +41,7 @@ pub fn create(
     id: u64,
     people_id: u64,
     tag_kind_id: u64,
-    content: &str,
+    bookmark_id: u64,
     verified_at: Option<u64>,
 ) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
@@ -59,7 +59,7 @@ pub fn create(
     };
 
     let mut tag_iter = match stmt.query_map(
-        (id, people_id, tag_kind_id, content, verified_at),
+        (id, people_id, tag_kind_id, bookmark_id, verified_at),
         get_tag_from_row,
     ) {
         Ok(tag_iter) => tag_iter,
