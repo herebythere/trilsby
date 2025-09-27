@@ -38,14 +38,13 @@ pub fn create(
     people_id: u64,
     tag_kind_id: u64,
     bookmark_id: u64,
-    verified_at: Option<u64>,
 ) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         INSERT INTO tags
             (id, people_id, tag_kind_id, bookmark_id)
         VALUES
-            (?1, ?2, ?3, ?4, ?5)
+            (?1, ?2, ?3, ?4)
         RETURNING
             *
     ",
@@ -55,7 +54,7 @@ pub fn create(
     };
 
     let mut tag_iter = match stmt.query_map(
-        (id, people_id, tag_kind_id, bookmark_id, verified_at),
+        (id, people_id, tag_kind_id, bookmark_id),
         get_tag_from_row,
     ) {
         Ok(tag_iter) => tag_iter,
@@ -71,7 +70,7 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
+pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -102,10 +101,9 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
     Ok(None)
 }
 
-pub fn read_by_kind_id_and_content(
+pub fn read_by_tag_kind_id(
     conn: &mut Connection,
     tag_kind_id: u64,
-    content: &str,
 ) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -117,15 +115,13 @@ pub fn read_by_kind_id_and_content(
             deleted_at IS NULL
             AND
             tag_kind_id = ?1
-            AND
-            content = ?2
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read a contact by id".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map((tag_kind_id, content), get_tag_from_row) {
+    let mut tag_iter = match stmt.query_map([tag_kind_id], get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
