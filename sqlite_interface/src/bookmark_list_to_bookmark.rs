@@ -1,0 +1,141 @@
+use rusqlite::{Connection, Error as RusqliteError, Result, Row};
+use type_flyweight::bookmark_lists::BookmarkListToBookmark;
+
+fn get_bookmark_list_to_bookmark_from_row(
+    row: &Row,
+) -> Result<BookmarkListToBookmark, RusqliteError> {
+    Ok(BookmarkListToBookmark {
+        id: row.get(0)?,
+        people_id: row.get(1)?,
+        bookmark_list_id: row.get(2)?,
+        bookmark_id: row.get(3)?,
+        order_weight: row.get(4)?,
+        deleted_at: row.get(5)?,
+    })
+}
+
+pub fn create_table(conn: &mut Connection) -> Result<(), String> {
+    let results = conn.execute(
+        "CREATE TABLE IF NOT EXISTS bookmark_list_to_bookmark (
+            id INTEGER PRIMARY KEY,
+            people_id INTEGER NOT NULL,
+            bookmark_list_id INTEGER NOT NULL,
+            bookmark_id INTEGER NOT NULL,
+            order_weight INTEGER NOT NULL,
+            deleted_at INTEGER
+        )",
+        (),
+    );
+
+    if let Err(e) = results {
+        return Err("roles table error: \n".to_string() + &e.to_string());
+    }
+
+    Ok(())
+}
+
+pub fn create(
+    conn: &mut Connection,
+    id: u64,
+    people_id: u64,
+    bookmark_list_id: u64,
+    bookmark_id: u64,
+    order_weight: u64,
+) -> Result<Option<BookmarkListToBookmark>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        INSERT INTO bookmark_list_to_bookmark
+            (id, people_id, bookmark_list_id, bookmark_id, order_weight)
+        VALUES
+            (?1, ?2, ?3, ?4, ?5)
+        RETURNING
+            *
+    ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("cound not prepare create statement".to_string()),
+    };
+
+    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+        (id, people_id, bookmark_list_id, bookmark_id, order_weight),
+        get_bookmark_list_to_bookmark_from_row,
+    ) {
+        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
+        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
+            return Ok(Some(bookmark_list_to_bookmark));
+        }
+    }
+
+    Ok(None)
+}
+
+pub fn read(conn: &mut Connection, id: u64) -> Result<Option<BookmarkListToBookmark>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            bookmark_list_to_bookmark
+        WHERE
+            deleted_at IS NULL
+            AND
+            id = ?1
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("cound not prepare read statement".to_string()),
+    };
+
+    let mut bookmark_list_to_bookmark_iter =
+        match stmt.query_map([id], get_bookmark_list_to_bookmark_from_row) {
+            Ok(bookmark_list_to_bookmark) => bookmark,
+            Err(e) => return Err(e.to_string()),
+        };
+
+    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
+        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
+            return Ok(Some(bookmark_list_to_bookmark));
+        }
+    }
+
+    Ok(None)
+}
+
+pub fn read_by_people_id(
+    conn: &mut Connection,
+    people_id: &str,
+) -> Result<Option<BookmarkListToBookmark>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            bookmark_list_to_bookmark
+        WHERE
+            deleted_at IS NULL
+            AND
+            people_id = ?1
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
+    };
+
+    let mut bookmark_list_to_bookmark_iter =
+        match stmt.query_map([people_id], get_bookmark_list_to_bookmark_from_row) {
+            Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+            Err(e) => return Err(e.to_string()),
+        };
+
+    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
+        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
+            return Ok(Some(bookmark_list_to_bookmark));
+        }
+    }
+
+    Ok(None)
+}
