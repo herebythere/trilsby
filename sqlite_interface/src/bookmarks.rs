@@ -21,8 +21,8 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
         (),
     );
 
-    if let Err(e) = results {
-        return Err("bookmarks table error: \n".to_string() + &e.to_string());
+    if let Err(_e) = results {
+        return Err("failed to create bookmarks table".to_string());
     }
 
     Ok(())
@@ -45,7 +45,7 @@ pub fn create(
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare create statement".to_string()),
+        _ => return Err("cound not prepare statement to create bookmark".to_string()),
     };
 
     let mut bookmark_iter = match stmt.query_map((id, url, people_id), get_bookmark_from_row) {
@@ -78,7 +78,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
+        _ => return Err("failed to read bookmark".to_string()),
     };
 
     let mut bookmark_iter = match stmt.query_map((limit, offset), get_bookmark_from_row) {

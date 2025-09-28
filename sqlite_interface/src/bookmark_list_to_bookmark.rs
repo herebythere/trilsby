@@ -27,8 +27,8 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
         (),
     );
 
-    if let Err(e) = results {
-        return Err("roles table error: \n".to_string() + &e.to_string());
+    if let Err(_e) = results {
+        return Err("Failed to create bookmark_list_to_bookmark table.".to_string());
     }
 
     Ok(())
@@ -53,20 +53,22 @@ pub fn create(
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare create statement".to_string()),
+        _ => {
+            return Err("cound not prepare statement to create BookmarkListToBookmark".to_string())
+        }
     };
 
-    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+    let mut list_to_bookmark_iter = match stmt.query_map(
         (id, people_id, bookmark_list_id, bookmark_id, order_weight),
         get_bookmark_list_to_bookmark_from_row,
     ) {
-        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Ok(list_to_bookmark_iter) => list_to_bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
-        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
-            return Ok(Some(bookmark_list_to_bookmark));
+    if let Some(list_to_bookmark_maybe) = list_to_bookmark_iter.next() {
+        if let Ok(list_to_bookmark) = list_to_bookmark_maybe {
+            return Ok(Some(list_to_bookmark));
         }
     }
 
@@ -134,17 +136,17 @@ pub fn read_by_people_id(
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+    let mut list_to_bookmark_iter = match stmt.query_map(
         (people_id, limit, offset),
         get_bookmark_list_to_bookmark_from_row,
     ) {
-        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Ok(list_to_bookmark_iter) => list_to_bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
-        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
-            return Ok(Some(bookmark_list_to_bookmark));
+    if let Some(list_to_bookmark_maybe) = list_to_bookmark_iter.next() {
+        if let Ok(list_to_bookmark) = list_to_bookmark_maybe {
+            return Ok(Some(list_to_bookmark));
         }
     }
 
@@ -177,17 +179,17 @@ pub fn read_by_bookmark_list_id(
         _ => return Err("cound not prepare read_by_bookmark_list_id statement".to_string()),
     };
 
-    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+    let mut list_to_bookmark_iter = match stmt.query_map(
         (bookmark_list_id, limit, offset),
         get_bookmark_list_to_bookmark_from_row,
     ) {
-        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Ok(list_to_bookmark_iter) => list_to_bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
-        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
-            return Ok(Some(bookmark_list_to_bookmark));
+    if let Some(list_to_bookmark_maybe) = list_to_bookmark_iter.next() {
+        if let Ok(list_to_bookmark) = list_to_bookmark_maybe {
+            return Ok(Some(list_to_bookmark));
         }
     }
 
