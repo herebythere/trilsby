@@ -68,7 +68,7 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Vec<Tag>, String> {
+pub fn read(conn: &mut Connection) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -83,7 +83,7 @@ pub fn read(conn: &mut Connection, id: u64) -> Result<Vec<Tag>, String> {
         _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map([id], get_tag_from_row) {
+    let mut tag_iter = match stmt.query_map([], get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
