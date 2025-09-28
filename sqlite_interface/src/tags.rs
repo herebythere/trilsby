@@ -135,7 +135,12 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
 }
 
 // limit offset ascending descending
-pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64, limit: u64, offset: u64) -> Result<Option<Tag>, String> {
+pub fn read_by_tag_kind_id(
+    conn: &mut Connection,
+    tag_kind_id: u64,
+    limit: u64,
+    offset: u64,
+) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -171,7 +176,12 @@ pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64, limit: u64, 
 }
 
 // limit offset ascending descending
-pub fn read_by_bookmark_id(conn: &mut Connection, bookmark_id: u64, limit: u64, offset: u64) -> Result<Option<Tag>, String> {
+pub fn read_by_bookmark_id(
+    conn: &mut Connection,
+    bookmark_id: u64,
+    limit: u64,
+    offset: u64,
+) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT

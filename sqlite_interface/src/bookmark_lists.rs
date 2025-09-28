@@ -5,7 +5,7 @@ fn get_bookmark_list_from_row(row: &Row) -> Result<BookmarkList, RusqliteError> 
     Ok(BookmarkList {
         id: row.get(0)?,
         people_id: row.get(1)?,
-        deleted_at: row.get(3)?,
+        deleted_at: row.get(2)?,
     })
 }
 
