@@ -68,6 +68,36 @@ pub fn create(
     Ok(None)
 }
 
+pub fn read(conn: &mut Connection, id: u64) -> Result<Vec<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            tags
+        WHERE
+            deleted_at IS NULL
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("failed to read a contact".to_string()),
+    };
+
+    let mut tag_iter = match stmt.query_map([id], get_tag_from_row) {
+        Ok(tag_iter) => tag_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    let mut tags: Vec<Tag> = Vec::new();
+    while let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            tags.push(tag);
+        }
+    }
+
+    Ok(tags)
+}
+
 pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -99,6 +129,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
     Ok(None)
 }
 
+// limit offset ascending descending
 pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -117,6 +148,38 @@ pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Op
     };
 
     let mut tag_iter = match stmt.query_map([tag_kind_id], get_tag_from_row) {
+        Ok(tag_iter) => tag_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    if let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            return Ok(Some(tag));
+        }
+    }
+
+    Ok(None)
+}
+
+// limit offset ascending descending
+pub fn read_by_bookmark_id(conn: &mut Connection, bookmark_id: u64) -> Result<Option<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            tags
+        WHERE
+            deleted_at IS NULL
+            AND
+            bookmark_id = ?1
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("failed to read a contact by id".to_string()),
+    };
+
+    let mut tag_iter = match stmt.query_map([bookmark_id], get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
