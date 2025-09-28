@@ -24,8 +24,8 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
         (),
     );
 
-    if let Err(e) = results {
-        return Err("tags table error: \n".to_string() + &e.to_string());
+    if let Err(_e) = results {
+        return Err("failed to create tags table".to_string());
     }
 
     Ok(())
@@ -49,7 +49,7 @@ pub fn create(
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to create a contact".to_string()),
+        _ => return Err("failed to create tag".to_string()),
     };
 
     let mut tag_iter =
@@ -67,7 +67,6 @@ pub fn create(
     Ok(None)
 }
 
-// limit offset
 pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -84,7 +83,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
+        _ => return Err("failed to read tags".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((limit, offset), get_tag_from_row) {
@@ -125,7 +124,7 @@ pub fn read_by_tag_kind_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact by id".to_string()),
+        _ => return Err("failed to read tags by tag_kind_id".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((tag_kind_id, limit, offset), get_tag_from_row) {
@@ -166,7 +165,7 @@ pub fn read_by_bookmark_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact by id".to_string()),
+        _ => return Err("failed to read tags by bookmark_id".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((bookmark_id, limit, offset), get_tag_from_row) {

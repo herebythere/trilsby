@@ -19,8 +19,8 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
         (),
     );
 
-    if let Err(e) = results {
-        return Err("tag_kinds table error: \n".to_string() + &e.to_string());
+    if let Err(_e) = results {
+        return Err("failed to create tag_kinds table".to_string());
     }
 
     Ok(())
@@ -38,7 +38,7 @@ pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKi
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare statement".to_string()),
+        _ => return Err("failed to create tag_kind".to_string()),
     };
 
     let mut tag_kind_iter = match stmt.query_map((id, kind), get_tag_kind_from_row) {
@@ -72,7 +72,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKin
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
+        _ => return Err("failed to read tag_kinds".to_string()),
     };
 
     let mut tag_kind_iter = match stmt.query_map((limit, offset), get_tag_kind_from_row) {
@@ -104,7 +104,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, Str
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare statement".to_string()),
+        _ => return Err("failed to read by id".to_string()),
     };
 
     let mut tag_kind_iter = match stmt.query_map([id], get_tag_kind_from_row) {
@@ -135,7 +135,7 @@ pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<TagKind>
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare statement".to_string()),
+        _ => return Err("failed to read by kind".to_string()),
     };
 
     let mut tag_kind_iter = match stmt.query_map([kind], get_tag_kind_from_row) {
