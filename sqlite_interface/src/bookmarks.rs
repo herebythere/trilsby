@@ -62,7 +62,39 @@ pub fn create(
     Ok(None)
 }
 
-// read all (connection, limit, offset)
+pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookmark>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            bookmarks
+        WHERE
+            deleted_at IS NULL
+        LIMIT
+            ?1
+        OFFSET
+            ?2
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("failed to read a contact".to_string()),
+    };
+
+    let mut bookmark_iter = match stmt.query_map((limit, offset), get_bookmark_from_row) {
+        Ok(bookmark_iter) => bookmark_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    let mut bookmarks: Vec<Bookmark> = Vec::new();
+    while let Some(bookmark_maybe) = bookmark_iter.next() {
+        if let Ok(bookmark) = bookmark_maybe {
+            bookmarks.push(bookmark);
+        }
+    }
+
+    Ok(bookmarks)
+}
 
 pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, String> {
     let mut stmt = match conn.prepare(
@@ -95,9 +127,12 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
     Ok(None)
 }
 
+// limit offset
 pub fn read_by_people_id(
     conn: &mut Connection,
     people_id: u64,
+    limit: u64,
+    offset: u64,
 ) -> Result<Option<Bookmark>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -109,13 +144,18 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([people_id], get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map((people_id, limit, offset), get_bookmark_from_row)
+    {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };
