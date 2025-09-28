@@ -56,7 +56,7 @@ pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKi
 }
 
 // limit offset
-pub fn read(conn: &mut Connection) -> Result<Vec<TagKind>, String> {
+pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKind>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -65,13 +65,17 @@ pub fn read(conn: &mut Connection) -> Result<Vec<TagKind>, String> {
             tag_kinds
         WHERE
             deleted_at IS NULL
+        LIMIT
+            ?1
+        OFFSET
+            ?2
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map([], get_tag_kind_from_row) {
+    let mut tag_kind_iter = match stmt.query_map((limit, offset), get_tag_kind_from_row) {
         Ok(tag_kind_iter) => tag_kind_iter,
         Err(e) => return Err(e.to_string()),
     };
@@ -117,7 +121,6 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, Str
     Ok(None)
 }
 
-// read all dbs at scale
 pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<TagKind>, String> {
     let mut stmt = match conn.prepare(
         "

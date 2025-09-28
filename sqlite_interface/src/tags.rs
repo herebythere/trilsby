@@ -69,7 +69,7 @@ pub fn create(
 }
 
 // limit offset
-pub fn read(conn: &mut Connection) -> Result<Vec<Tag>, String> {
+pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -78,13 +78,17 @@ pub fn read(conn: &mut Connection) -> Result<Vec<Tag>, String> {
             tags
         WHERE
             deleted_at IS NULL
+        LIMIT
+            ?1
+        OFFSET
+            ?2
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map([], get_tag_from_row) {
+    let mut tag_iter = match stmt.query_map((limit, offset), get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
@@ -131,7 +135,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
 }
 
 // limit offset ascending descending
-pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Option<Tag>, String> {
+pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64, limit: u64, offset: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -142,13 +146,17 @@ pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Op
             deleted_at IS NULL
             AND
             tag_kind_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read a contact by id".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map([tag_kind_id], get_tag_from_row) {
+    let mut tag_iter = match stmt.query_map((tag_kind_id, limit, offset), get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
@@ -163,7 +171,7 @@ pub fn read_by_tag_kind_id(conn: &mut Connection, tag_kind_id: u64) -> Result<Op
 }
 
 // limit offset ascending descending
-pub fn read_by_bookmark_id(conn: &mut Connection, bookmark_id: u64) -> Result<Option<Tag>, String> {
+pub fn read_by_bookmark_id(conn: &mut Connection, bookmark_id: u64, limit: u64, offset: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -174,13 +182,17 @@ pub fn read_by_bookmark_id(conn: &mut Connection, bookmark_id: u64) -> Result<Op
             deleted_at IS NULL
             AND
             bookmark_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read a contact by id".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map([bookmark_id], get_tag_from_row) {
+    let mut tag_iter = match stmt.query_map((bookmark_id, limit, offset), get_tag_from_row) {
         Ok(tag_iter) => tag_iter,
         Err(e) => return Err(e.to_string()),
     };
