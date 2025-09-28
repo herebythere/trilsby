@@ -4,8 +4,8 @@ use type_flyweight::bookmarks::Bookmark;
 fn get_bookmark_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
     Ok(Bookmark {
         id: row.get(0)?,
-        people_id: row.get(1)?,
-        url: row.get(2)?,
+        url: row.get(1)?,
+        people_id: row.get(2)?,
         deleted_at: row.get(3)?,
     })
 }
@@ -14,8 +14,8 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS bookmarks (
             id INTEGER PRIMARY KEY,
-            people_id INTEGER NOT NULL,
             url TEXT NOT NULL UNIQUE,
+            people_id INTEGER NOT NULL,
             deleted_at INTEGER
         )",
         (),
@@ -37,7 +37,7 @@ pub fn create(
     let mut stmt = match conn.prepare(
         "
         INSERT INTO bookmarks
-            (id, people_id, url)
+            (id, url. people_id)
         VALUES
             (?1, ?2, ?3)
         RETURNING
@@ -48,7 +48,7 @@ pub fn create(
         _ => return Err("cound not prepare create statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((id, people_id, url), get_bookmark_from_row) {
+    let mut bookmark_iter = match stmt.query_map((id, url, people_id), get_bookmark_from_row) {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };

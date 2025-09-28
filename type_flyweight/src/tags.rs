@@ -10,8 +10,8 @@ pub struct TagKind {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Tag {
     pub id: u64,
-    pub people_id: u64,
     pub tag_kind_id: u64,
     pub bookmark_id: u64,
+    pub people_id: u64,
     pub deleted_at: Option<u64>,
 }

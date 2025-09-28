@@ -10,9 +10,9 @@ pub struct BookmarkList {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct BookmarkListToBookmark {
     pub id: u64,
-    pub people_id: u64,
     pub bookmark_list_id: u64,
     pub bookmark_id: u64,
     pub order_weight: u64,
+    pub people_id: u64,
     pub deleted_at: Option<u64>,
 }
