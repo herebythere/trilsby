@@ -71,13 +71,13 @@ pub fn read(conn: &mut Connection) -> Result<Vec<TagKind>, String> {
         _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut tag_kinds_iter = match stmt.query_map([], get_tag_kind_from_row) {
-        Ok(tag_kinds_iter) => tag_kinds_iter,
+    let mut tag_kind_iter = match stmt.query_map([], get_tag_kind_from_row) {
+        Ok(tag_kind_iter) => tag_kind_iter,
         Err(e) => return Err(e.to_string()),
     };
 
     let mut tag_kinds: Vec<TagKind> = Vec::new();
-    while let Some(tag_maybe) = tag_kinds_iter.next() {
+    while let Some(tag_maybe) = tag_kind_iter.next() {
         if let Ok(tag_kind) = tag_maybe {
             tag_kinds.push(tag_kind);
         }
