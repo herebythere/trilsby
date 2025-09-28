@@ -59,7 +59,41 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>, String> {
+pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<BookmarkList>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            bookmark_lists
+        WHERE
+            deleted_at IS NULL
+        LIMIT
+            ?1
+        OFFSET
+            ?2
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("failed to read a contact".to_string()),
+    };
+
+    let mut bookmark_list_iter = match stmt.query_map((limit, offset), get_bookmark_list_from_row) {
+        Ok(bookmark_list_iter) => bookmark_list_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    let mut bookmark_lists: Vec<BookmarkList> = Vec::new();
+    while let Some(bookmark_list_maybe) = bookmark_list_iter.next() {
+        if let Ok(bookmark_list) = bookmark_list_maybe {
+            bookmark_lists.push(bookmark_list);
+        }
+    }
+
+    Ok(bookmark_lists)
+}
+
+pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT

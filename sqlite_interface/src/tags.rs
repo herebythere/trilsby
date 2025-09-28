@@ -1,5 +1,4 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-
 use type_flyweight::tags::Tag;
 
 fn get_tag_from_row(row: &Row) -> Result<Tag, RusqliteError> {
@@ -103,38 +102,6 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
     Ok(tags)
 }
 
-pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
-    let mut stmt = match conn.prepare(
-        "
-        SELECT
-            *
-        FROM
-            tags
-        WHERE
-            deleted_at IS NULL
-            AND
-            id = ?1
-        ",
-    ) {
-        Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
-    };
-
-    let mut tag_iter = match stmt.query_map([id], get_tag_from_row) {
-        Ok(tag_iter) => tag_iter,
-        Err(e) => return Err(e.to_string()),
-    };
-
-    if let Some(tag_maybe) = tag_iter.next() {
-        if let Ok(tag) = tag_maybe {
-            return Ok(Some(tag));
-        }
-    }
-
-    Ok(None)
-}
-
-// limit offset ascending descending
 pub fn read_by_tag_kind_id(
     conn: &mut Connection,
     tag_kind_id: u64,

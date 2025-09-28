@@ -127,7 +127,6 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
     Ok(None)
 }
 
-// limit offset
 pub fn read_by_people_id(
     conn: &mut Connection,
     people_id: u64,

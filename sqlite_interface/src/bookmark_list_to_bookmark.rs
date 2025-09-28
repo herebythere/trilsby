@@ -73,10 +73,11 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read_by_id(
+pub fn read(
     conn: &mut Connection,
-    id: u64,
-) -> Result<Option<BookmarkListToBookmark>, String> {
+    limit: u64,
+    offset: u64,
+) -> Result<Vec<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -85,32 +86,37 @@ pub fn read_by_id(
             bookmark_list_to_bookmark
         WHERE
             deleted_at IS NULL
-            AND
-            id = ?1
+        LIMIT
+            ?1
+        OFFSET
+            ?2
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_id statement".to_string()),
+        _ => return Err("failed to read a contact".to_string()),
     };
 
-    let mut bookmark_list_to_bookmark_iter =
-        match stmt.query_map([id], get_bookmark_list_to_bookmark_from_row) {
-            Ok(bookmark_list_to_bookmark) => bookmark_list_to_bookmark,
+    let mut list_to_bookmark =
+        match stmt.query_map((limit, offset), get_bookmark_list_to_bookmark_from_row) {
+            Ok(list_to_bookmark) => list_to_bookmark,
             Err(e) => return Err(e.to_string()),
         };
 
-    if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
-        if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
-            return Ok(Some(bookmark_list_to_bookmark));
+    let mut list_to_bookmarks: Vec<BookmarkListToBookmark> = Vec::new();
+    while let Some(bookmark_maybe) = list_to_bookmark.next() {
+        if let Ok(bookmark) = bookmark_maybe {
+            list_to_bookmarks.push(bookmark);
         }
     }
 
-    Ok(None)
+    Ok(list_to_bookmarks)
 }
 
 pub fn read_by_people_id(
     conn: &mut Connection,
     people_id: &str,
+    limit: u64,
+    offset: u64,
 ) -> Result<Option<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -128,11 +134,13 @@ pub fn read_by_people_id(
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_list_to_bookmark_iter =
-        match stmt.query_map([people_id], get_bookmark_list_to_bookmark_from_row) {
-            Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
-            Err(e) => return Err(e.to_string()),
-        };
+    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+        (people_id, limit, offset),
+        get_bookmark_list_to_bookmark_from_row,
+    ) {
+        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Err(e) => return Err(e.to_string()),
+    };
 
     if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
         if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
@@ -146,6 +154,8 @@ pub fn read_by_people_id(
 pub fn read_by_bookmark_list_id(
     conn: &mut Connection,
     bookmark_list_id: &str,
+    limit: u64,
+    offset: u64,
 ) -> Result<Option<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -157,17 +167,23 @@ pub fn read_by_bookmark_list_id(
             deleted_at IS NULL
             AND
             bookmark_list_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("cound not prepare read_by_bookmark_list_id statement".to_string()),
     };
 
-    let mut bookmark_list_to_bookmark_iter =
-        match stmt.query_map([bookmark_list_id], get_bookmark_list_to_bookmark_from_row) {
-            Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
-            Err(e) => return Err(e.to_string()),
-        };
+    let mut bookmark_list_to_bookmark_iter = match stmt.query_map(
+        (bookmark_list_id, limit, offset),
+        get_bookmark_list_to_bookmark_from_row,
+    ) {
+        Ok(bookmark_list_to_bookmark_iter) => bookmark_list_to_bookmark_iter,
+        Err(e) => return Err(e.to_string()),
+    };
 
     if let Some(bookmark_list_to_bookmark_maybe) = bookmark_list_to_bookmark_iter.next() {
         if let Ok(bookmark_list_to_bookmark) = bookmark_list_to_bookmark_maybe {
