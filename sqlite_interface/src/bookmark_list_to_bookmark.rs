@@ -133,7 +133,7 @@ pub fn read_by_people_id(
             AND
             people_id = ?1
         ORDER BY
-            order_weight DESC, bookmark_list DESC, id DESC
+            id DESC, order_weight DESC, bookmark_list DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -178,7 +178,7 @@ pub fn read_by_bookmark_list_id(
         OFFSET
             ?3
         ORDER BY
-            order_weight DESC, id DESC
+            id DESC, order_weight DESC
         ",
     ) {
         Ok(stmt) => stmt,

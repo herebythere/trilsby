@@ -39,7 +39,7 @@ pub fn create(
             (?1, ?2)
         RETURNING
             *
-    ",
+        ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("cound not prepare create statement".to_string()),
@@ -129,6 +129,8 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>
 pub fn read_by_people_id(
     conn: &mut Connection,
     people_id: &str,
+    limit: u64,
+    offset: u64,
 ) -> Result<Option<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -140,6 +142,10 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ORDER BY
             id DESC
         ",
@@ -148,7 +154,7 @@ pub fn read_by_people_id(
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([people_id], get_bookmark_list_from_row) {
+    let mut bookmark_iter = match stmt.query_map((people_id, limit, offset), get_bookmark_list_from_row) {
         Ok(bookmark_iter) => bookmark_iter,
         Err(e) => return Err(e.to_string()),
     };

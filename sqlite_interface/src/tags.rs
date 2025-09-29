@@ -187,3 +187,46 @@ pub fn read_by_bookmark_id(
 
     Ok(None)
 }
+
+// limit offset ascending descending
+pub fn read_by_people_id(
+    conn: &mut Connection,
+    people_id: u64,
+    limit: u64,
+    offset: u64,
+) -> Result<Option<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            tags
+        WHERE
+            deleted_at IS NULL
+            AND
+            people_id = ?1
+        LIMIT
+            ?2
+        OFFSET
+            ?3
+        ORDER BY
+            id DESC
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("failed to read tags by people_id".to_string()),
+    };
+
+    let mut tag_iter = match stmt.query_map((people_id, limit, offset), get_tag_from_row) {
+        Ok(tag_iter) => tag_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    if let Some(tag_maybe) = tag_iter.next() {
+        if let Ok(tag) = tag_maybe {
+            return Ok(Some(tag));
+        }
+    }
+
+    Ok(None)
+}
