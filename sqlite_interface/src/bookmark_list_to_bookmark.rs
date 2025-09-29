@@ -18,10 +18,10 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS bookmark_list_to_bookmark (
             id INTEGER PRIMARY KEY,
-            people_id INTEGER NOT NULL,
             bookmark_list_id INTEGER NOT NULL,
             bookmark_id INTEGER NOT NULL,
             order_weight INTEGER NOT NULL,
+            people_id INTEGER NOT NULL,
             deleted_at INTEGER
         )",
         (),
@@ -92,6 +92,8 @@ pub fn read(
             ?1
         OFFSET
             ?2
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -130,6 +132,8 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        ORDER BY
+            order_weight DESC, bookmark_list DESC, id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -173,6 +177,8 @@ pub fn read_by_bookmark_list_id(
             ?2
         OFFSET
             ?3
+        ORDER BY
+            order_weight DESC, id DESC
         ",
     ) {
         Ok(stmt) => stmt,

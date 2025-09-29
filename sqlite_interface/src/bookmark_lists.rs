@@ -72,6 +72,8 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
             ?1
         OFFSET
             ?2
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -138,6 +140,8 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,

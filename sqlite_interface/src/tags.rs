@@ -80,6 +80,8 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
             ?1
         OFFSET
             ?2
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -121,6 +123,8 @@ pub fn read_by_tag_kind_id(
             ?2
         OFFSET
             ?3
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -162,6 +166,8 @@ pub fn read_by_bookmark_id(
             ?2
         OFFSET
             ?3
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,

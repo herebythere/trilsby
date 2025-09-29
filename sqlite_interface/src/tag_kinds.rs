@@ -69,6 +69,8 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKin
             ?1
         OFFSET
             ?2
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,

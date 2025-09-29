@@ -75,7 +75,8 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
             ?1
         OFFSET
             ?2
-        ",
+        ORDER BY
+            id DESC",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read bookmark".to_string()),
@@ -107,6 +108,8 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
             deleted_at IS NULL
             AND
             id = ?1
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -147,6 +150,8 @@ pub fn read_by_people_id(
             ?2
         OFFSET
             ?3
+        ORDER BY
+            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
