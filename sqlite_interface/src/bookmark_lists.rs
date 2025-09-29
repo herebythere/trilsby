@@ -154,10 +154,11 @@ pub fn read_by_people_id(
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((people_id, limit, offset), get_bookmark_list_from_row) {
-        Ok(bookmark_iter) => bookmark_iter,
-        Err(e) => return Err(e.to_string()),
-    };
+    let mut bookmark_iter =
+        match stmt.query_map((people_id, limit, offset), get_bookmark_list_from_row) {
+            Ok(bookmark_iter) => bookmark_iter,
+            Err(e) => return Err(e.to_string()),
+        };
 
     if let Some(bookmark_maybe) = bookmark_iter.next() {
         if let Ok(bookmark) = bookmark_maybe {

@@ -5,7 +5,8 @@ fn get_tag_kind_from_row(row: &Row) -> Result<TagKind, RusqliteError> {
     Ok(TagKind {
         id: row.get(0)?,
         kind: row.get(1)?,
-        deleted_at: row.get(2)?,
+        people_id: row.get(2)?,
+        deleted_at: row.get(3)?,
     })
 }
 
@@ -14,6 +15,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
         "CREATE TABLE IF NOT EXISTS tag_kinds (
             id INTEGER PRIMARY KEY,
             kind TEXT NOT NULL UNIQUE,
+            people_id INTEGER NOT NULL,
             deleted_at INTEGER
         )",
         (),
@@ -26,13 +28,18 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     Ok(())
 }
 
-pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKind>, String> {
+pub fn create(
+    conn: &mut Connection,
+    id: u64,
+    kind: &str,
+    people_id: u64,
+) -> Result<Option<TagKind>, String> {
     let mut stmt = match conn.prepare(
         "
         INSERT INTO tag_kinds
-            (id, kind)
+            (id, kind, people_id)
         VALUES
-            (?1, ?2)
+            (?1, ?2, ?3)
         RETURNING
             *
     ",
@@ -41,7 +48,7 @@ pub fn create(conn: &mut Connection, id: u64, kind: &str) -> Result<Option<TagKi
         _ => return Err("failed to create tag_kind".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map((id, kind), get_tag_kind_from_row) {
+    let mut tag_kind_iter = match stmt.query_map((id, kind, people_id), get_tag_kind_from_row) {
         Ok(kind_iter) => kind_iter,
         Err(e) => return Err(e.to_string()),
     };
