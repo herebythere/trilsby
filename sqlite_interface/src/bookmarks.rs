@@ -136,7 +136,7 @@ pub fn read_by_people_id(
     people_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<Bookmark>, String> {
+) -> Result<Vec<Bookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -147,12 +147,12 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        ORDER BY
+            id DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -164,11 +164,12 @@ pub fn read_by_people_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut bookmarks: Vec<Bookmark> = Vec::new();
     if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            return Ok(Some(entry));
+            bookmarks.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(bookmarks)
 }
