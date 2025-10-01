@@ -109,8 +109,6 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
             deleted_at IS NULL
             AND
             id = ?1
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
