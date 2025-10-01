@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["type_flyweight" ]
+members = [ "type_flyweight", "sqlite_interface" ]
 
 [workspace.dependencies]
 rusqlite = { version = "0.32" }
