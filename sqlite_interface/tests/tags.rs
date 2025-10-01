@@ -27,6 +27,8 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
+    println!("{:?}", tag_entry);
+
     // read
     let mut tag_read_entry = match tags::read(&mut conn, 1, 0) {
         Ok(mut ck) => ck.pop(),
@@ -35,7 +37,37 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(None != tag_entry);
     assert!(tag_entry == tag_read_entry);
-    assert!(Some(incorrect_tag) != tag_read_entry);
+    assert!(Some(incorrect_tag.clone()) != tag_read_entry);
+
+    // read by tag kind id
+    let mut tag_read_by_kind_id_entry = match tags::read_by_tag_kind_id(&mut conn, 2, 1, 0) {
+        Ok(mut ck) => ck.pop(),
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != tag_entry);
+    assert!(tag_entry == tag_read_by_kind_id_entry);
+    assert!(Some(incorrect_tag.clone()) != tag_read_by_kind_id_entry);
+
+    // read by bookmark id
+    let mut tag_read_by_bookmark_id_entry = match tags::read_by_bookmark_id(&mut conn, 3, 1, 0) {
+        Ok(mut ck) => ck.pop(),
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != tag_entry);
+    assert!(tag_entry == tag_read_by_bookmark_id_entry);
+    assert!(Some(incorrect_tag.clone()) != tag_read_by_bookmark_id_entry);
+
+    // read by people id
+    let mut tag_read_by_people_id_entry = match tags::read_by_people_id(&mut conn, 4, 1, 0) {
+        Ok(mut ck) => ck.pop(),
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != tag_entry);
+    assert!(tag_entry == tag_read_by_people_id_entry);
+    assert!(Some(incorrect_tag.clone()) != tag_read_by_people_id_entry);
 
     Ok(())
 }

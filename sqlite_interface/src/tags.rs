@@ -110,7 +110,7 @@ pub fn read_by_tag_kind_id(
     tag_kind_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<Tag>, String> {
+) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -121,12 +121,12 @@ pub fn read_by_tag_kind_id(
             deleted_at IS NULL
             AND
             tag_kind_id = ?1
+        ORDER BY
+            id DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -138,13 +138,14 @@ pub fn read_by_tag_kind_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut tags: Vec<Tag> = Vec::new();
     if let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(tag) = entry_maybe {
-            return Ok(Some(tag));
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(tags)
 }
 
 // limit offset ascending descending
@@ -153,7 +154,7 @@ pub fn read_by_bookmark_id(
     bookmark_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<Tag>, String> {
+) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -164,12 +165,12 @@ pub fn read_by_bookmark_id(
             deleted_at IS NULL
             AND
             bookmark_id = ?1
+        ORDER BY
+            id DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
@@ -181,13 +182,14 @@ pub fn read_by_bookmark_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut tags: Vec<Tag> = Vec::new();
     if let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(tag) = entry_maybe {
-            return Ok(Some(tag));
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(tags)
 }
 
 // limit offset ascending descending
@@ -196,7 +198,7 @@ pub fn read_by_people_id(
     people_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<Tag>, String> {
+) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -224,11 +226,12 @@ pub fn read_by_people_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut tags: Vec<Tag> = Vec::new();
     if let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(tag) = entry_maybe {
-            return Ok(Some(tag));
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(tags)
 }
