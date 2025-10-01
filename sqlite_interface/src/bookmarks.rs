@@ -1,7 +1,7 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
 use type_flyweight::bookmarks::Bookmark;
 
-fn get_bookmark_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
+fn get_entry_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
     Ok(Bookmark {
         id: row.get(0)?,
         url: row.get(1)?,
@@ -48,14 +48,14 @@ pub fn create(
         _ => return Err("cound not prepare statement to create bookmark".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((id, url, people_id), get_bookmark_from_row) {
-        Ok(bookmark_iter) => bookmark_iter,
+    let mut entry_iter = match stmt.query_map((id, url, people_id), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_maybe) = bookmark_iter.next() {
-        if let Ok(bookmark) = bookmark_maybe {
-            return Ok(Some(bookmark));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 
@@ -82,15 +82,15 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
         _ => return Err("failed to read bookmark".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((limit, offset), get_bookmark_from_row) {
-        Ok(bookmark_iter) => bookmark_iter,
+    let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
     let mut bookmarks: Vec<Bookmark> = Vec::new();
-    while let Some(bookmark_maybe) = bookmark_iter.next() {
-        if let Ok(bookmark) = bookmark_maybe {
-            bookmarks.push(bookmark);
+    while let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            bookmarks.push(entry);
         }
     }
 
@@ -116,14 +116,14 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
         _ => return Err("cound not prepare read_by_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map([id], get_bookmark_from_row) {
+    let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
         Ok(bookmark) => bookmark,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_maybe) = bookmark_iter.next() {
-        if let Ok(bookmark) = bookmark_maybe {
-            return Ok(Some(bookmark));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 
@@ -158,15 +158,14 @@ pub fn read_by_people_id(
         _ => return Err("cound not prepare read_by_people_id statement".to_string()),
     };
 
-    let mut bookmark_iter = match stmt.query_map((people_id, limit, offset), get_bookmark_from_row)
-    {
-        Ok(bookmark_iter) => bookmark_iter,
+    let mut entry_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(bookmark_maybe) = bookmark_iter.next() {
-        if let Ok(bookmark) = bookmark_maybe {
-            return Ok(Some(bookmark));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 

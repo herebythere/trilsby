@@ -1,7 +1,7 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
 use type_flyweight::tags::TagKind;
 
-fn get_tag_kind_from_row(row: &Row) -> Result<TagKind, RusqliteError> {
+fn get_entry_from_row(row: &Row) -> Result<TagKind, RusqliteError> {
     Ok(TagKind {
         id: row.get(0)?,
         kind: row.get(1)?,
@@ -48,14 +48,14 @@ pub fn create(
         _ => return Err("failed to create tag_kind".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map((id, kind, people_id), get_tag_kind_from_row) {
-        Ok(kind_iter) => kind_iter,
+    let mut entry_iter = match stmt.query_map((id, kind, people_id), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
-        if let Ok(tag_kind) = tag_kind_maybe {
-            return Ok(Some(tag_kind));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 
@@ -84,15 +84,15 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKin
         _ => return Err("failed to read tag_kinds".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map((limit, offset), get_tag_kind_from_row) {
-        Ok(tag_kind_iter) => tag_kind_iter,
+    let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
     let mut tag_kinds: Vec<TagKind> = Vec::new();
-    while let Some(tag_maybe) = tag_kind_iter.next() {
-        if let Ok(tag_kind) = tag_maybe {
-            tag_kinds.push(tag_kind);
+    while let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            tag_kinds.push(entry);
         }
     }
 
@@ -116,14 +116,14 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, Str
         _ => return Err("failed to read by id".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map([id], get_tag_kind_from_row) {
-        Ok(tag_kind) => tag_kind,
+    let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
-        if let Ok(tag_kind) = tag_kind_maybe {
-            return Ok(Some(tag_kind));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 
@@ -147,14 +147,14 @@ pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<TagKind>
         _ => return Err("failed to read by kind".to_string()),
     };
 
-    let mut tag_kind_iter = match stmt.query_map([kind], get_tag_kind_from_row) {
-        Ok(kind_iter) => kind_iter,
+    let mut entry_iter = match stmt.query_map([kind], get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    if let Some(tag_kind_maybe) = tag_kind_iter.next() {
-        if let Ok(tag_kind) = tag_kind_maybe {
-            return Ok(Some(tag_kind));
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
         }
     }
 
