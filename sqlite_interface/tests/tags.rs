@@ -27,8 +27,6 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    println!("{:?}", tag_entry);
-
     // read
     let mut tag_read_entry = match tags::read(&mut conn, 1, 0) {
         Ok(mut ck) => ck.pop(),

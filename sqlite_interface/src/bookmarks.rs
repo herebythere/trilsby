@@ -80,7 +80,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read bookmark".to_string()),
+        _ => return Err("could not prepare a bookmarks read statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -114,7 +114,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Bookmark>, St
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_id statement".to_string()),
+        _ => return Err("cound not prepare a bookmarks read_by_id statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
@@ -156,7 +156,7 @@ pub fn read_by_people_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
+        _ => return Err("cound not prepare a bookmarks read_by_people_id statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {

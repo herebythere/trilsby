@@ -52,7 +52,7 @@ pub fn create(
     ) {
         Ok(stmt) => stmt,
         _ => {
-            return Err("cound not prepare statement to create BookmarkListToBookmark".to_string())
+            return Err("could not prepare statement to create BookmarkListToBookmark".to_string())
         }
     };
 
@@ -95,7 +95,9 @@ pub fn read(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
+        _ => {
+            return Err("could not prepare a bookmark_list_to_bookmark read statement".to_string())
+        }
     };
 
     let mut list_to_bookmark = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -115,10 +117,10 @@ pub fn read(
 
 pub fn read_by_people_id(
     conn: &mut Connection,
-    people_id: &str,
+    people_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<BookmarkListToBookmark>, String> {
+) -> Result<Vec<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -130,11 +132,20 @@ pub fn read_by_people_id(
             AND
             people_id = ?1
         ORDER BY
-            id DESC, order_weight DESC, bookmark_list DESC
+            id DESC, order_weight DESC, bookmark_list_id DESC
+        LIMIT
+            ?2
+        OFFSET
+            ?3
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
+        _ => {
+            return Err(
+                "cound not prepare a bookmark_list_to_bookmark read_by_people_id statement"
+                    .to_string(),
+            )
+        }
     };
 
     let mut entry_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {
@@ -142,23 +153,25 @@ pub fn read_by_people_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut list_to_bookmarks: Vec<BookmarkListToBookmark> = Vec::new();
     if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            return Ok(Some(entry));
+            list_to_bookmarks.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(list_to_bookmarks)
 }
 
 pub fn read_by_bookmark_list_id(
     conn: &mut Connection,
-    bookmark_list_id: &str,
+    bookmark_list_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<BookmarkListToBookmark>, String> {
-    let mut stmt = match conn.prepare(
-        "
+) -> Result<Vec<BookmarkListToBookmark>, String> {
+    let mut stmt =
+        match conn.prepare(
+            "
         SELECT
             *
         FROM
@@ -167,17 +180,20 @@ pub fn read_by_bookmark_list_id(
             deleted_at IS NULL
             AND
             bookmark_list_id = ?1
+        ORDER BY
+            id DESC, order_weight DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC, order_weight DESC
         ",
-    ) {
-        Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_bookmark_list_id statement".to_string()),
-    };
+        ) {
+            Ok(stmt) => stmt,
+            _ => return Err(
+                "cound not prepare bookmark_list_to_bookmark read_by_bookmark_list_id statement"
+                    .to_string(),
+            ),
+        };
 
     let mut entry_iter = match stmt.query_map((bookmark_list_id, limit, offset), get_entry_from_row)
     {
@@ -185,11 +201,12 @@ pub fn read_by_bookmark_list_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut list_to_bookmarks: Vec<BookmarkListToBookmark> = Vec::new();
     if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            return Ok(Some(entry));
+            list_to_bookmarks.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(list_to_bookmarks)
 }

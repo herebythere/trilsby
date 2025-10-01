@@ -42,7 +42,7 @@ pub fn create(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare create statement".to_string()),
+        _ => return Err("cound not prepare bookmark_list create statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((id, people_id), get_entry_from_row) {
@@ -77,7 +77,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a bookmark_list".to_string()),
+        _ => return Err("could not prepare a bookmark_list read statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -109,7 +109,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("could not prepare read statement".to_string()),
+        _ => return Err("could not prepare bookmark_list read_by_id statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
@@ -151,7 +151,9 @@ pub fn read_by_people_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read_by_people_id statement".to_string()),
+        _ => {
+            return Err("cound not prepare a bookmark_list read_by_people_id statement".to_string())
+        }
     };
 
     let mut entry_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {

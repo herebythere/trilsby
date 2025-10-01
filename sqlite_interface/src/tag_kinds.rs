@@ -45,7 +45,7 @@ pub fn create(
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to create tag_kind".to_string()),
+        _ => return Err("Could not prepare a tag_kinds create statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((id, kind, people_id), get_entry_from_row) {
@@ -80,7 +80,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKin
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read tag_kinds".to_string()),
+        _ => return Err("could not prepare a tag_kinds read statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -112,7 +112,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<TagKind>, Str
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read by id".to_string()),
+        _ => return Err("could not prepare a tag_kinds read_by_id statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
@@ -143,7 +143,7 @@ pub fn read_by_kind(conn: &mut Connection, kind: &str) -> Result<Option<TagKind>
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read by kind".to_string()),
+        _ => return Err("could not prepare a tag_kinds read_by_kind statment".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map([kind], get_entry_from_row) {

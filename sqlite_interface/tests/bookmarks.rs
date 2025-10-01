@@ -21,7 +21,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     let bookmark_entry = match bookmarks::create(&mut conn, 1, "https://w-lfpup.com", 3) {
         Ok(ck) => ck,
         Err(e) => {
-            assert!(false, "failed to create tag entry");
+            assert!(false, "failed to create bookmark entry");
             return Err(e.into());
         }
     };

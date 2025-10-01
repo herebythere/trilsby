@@ -49,7 +49,7 @@ pub fn create(
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to create tag".to_string()),
+        _ => return Err("could not prepare a tags create statement".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map(
@@ -87,7 +87,7 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
         ",
     ) {
         Ok(stmt) => stmt,
-        Err(_e) => return Err("failed to read tags".to_string()),
+        Err(_e) => return Err("could not prepare a tags read statement".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -130,7 +130,7 @@ pub fn read_by_tag_kind_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read tags by tag_kind_id".to_string()),
+        _ => return Err("could not prepare a tags read_by_tag_kind_id statement".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((tag_kind_id, limit, offset), get_entry_from_row) {
@@ -174,7 +174,7 @@ pub fn read_by_bookmark_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read tags by bookmark_id".to_string()),
+        _ => return Err("could not prepare a tags read_by_bookmark_id statement".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((bookmark_id, limit, offset), get_entry_from_row) {
@@ -218,7 +218,7 @@ pub fn read_by_people_id(
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read tags by people_id".to_string()),
+        _ => return Err("could not prepare a tags read_by_people_id statement".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {
