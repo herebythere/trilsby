@@ -1,5 +1,5 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-use type_flyweight::tags::Tag;
+use type_flyweight::Tag;
 
 fn get_entry_from_row(row: &Row) -> Result<Tag, RusqliteError> {
     Ok(Tag {

@@ -1,6 +1,6 @@
 use rusqlite::{Connection, Result};
 use sqlite_interface::tag_kinds;
-use type_flyweight::tags::TagKind;
+use type_flyweight::TagKind;
 
 #[test]
 fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {

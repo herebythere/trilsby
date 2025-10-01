@@ -1,6 +1,6 @@
 use rusqlite::{Connection, Result};
 use sqlite_interface::bookmarks;
-use type_flyweight::bookmarks::Bookmark;
+use type_flyweight::Bookmark;
 
 #[test]
 fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {

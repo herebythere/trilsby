@@ -1,5 +1,5 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-use type_flyweight::bookmark_lists::BookmarkListToBookmark;
+use type_flyweight::BookmarkListToBookmark;
 
 fn get_entry_from_row(row: &Row) -> Result<BookmarkListToBookmark, RusqliteError> {
     Ok(BookmarkListToBookmark {
