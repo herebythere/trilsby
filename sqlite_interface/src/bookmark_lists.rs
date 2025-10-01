@@ -20,7 +20,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     );
 
     if let Err(e) = results {
-        return Err("roles table error: \n".to_string() + &e.to_string());
+        return Err("bookmark_list table error: \n".to_string() + &e.to_string());
     }
 
     Ok(())
@@ -68,16 +68,16 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
             bookmark_lists
         WHERE
             deleted_at IS NULL
+        ORDER BY
+            id DESC
         LIMIT
             ?1
         OFFSET
             ?2
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read a contact".to_string()),
+        _ => return Err("failed to read a bookmark_list".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
@@ -109,7 +109,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("cound not prepare read statement".to_string()),
+        _ => return Err("could not prepare read statement".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map([id], get_entry_from_row) {
@@ -142,12 +142,12 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        ORDER BY
+            id DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,

@@ -35,10 +35,10 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
 pub fn create(
     conn: &mut Connection,
     id: u64,
-    people_id: u64,
     bookmark_list_id: u64,
     bookmark_id: u64,
     order_weight: u64,
+    people_id: u64,
 ) -> Result<Option<BookmarkListToBookmark>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -86,12 +86,12 @@ pub fn read(
             bookmark_list_to_bookmark
         WHERE
             deleted_at IS NULL
+        ORDER BY
+            id DESC
         LIMIT
             ?1
         OFFSET
             ?2
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
