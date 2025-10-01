@@ -128,10 +128,10 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<BookmarkList>
 
 pub fn read_by_people_id(
     conn: &mut Connection,
-    people_id: &str,
+    people_id: u64,
     limit: u64,
     offset: u64,
-) -> Result<Option<BookmarkList>, String> {
+) -> Result<Vec<BookmarkList>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -159,11 +159,12 @@ pub fn read_by_people_id(
         Err(e) => return Err(e.to_string()),
     };
 
+    let mut bookmark_lists: Vec<BookmarkList> = Vec::new();
     if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            return Ok(Some(entry));
+            bookmark_lists.push(entry);
         }
     }
 
-    Ok(None)
+    Ok(bookmark_lists)
 }

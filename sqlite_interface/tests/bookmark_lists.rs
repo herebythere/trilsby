@@ -33,7 +33,28 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
 
     assert!(None != bookmark_list_entry);
     assert!(bookmark_list_entry == bookmark_list_read_entry);
-    assert!(Some(incorrect_bookmark_list) != bookmark_list_read_entry);
+    assert!(Some(incorrect_bookmark_list.clone()) != bookmark_list_read_entry);
+
+    // read by id
+    let mut bookmark_list_read_by_id_entry = match bookmark_lists::read_by_id(&mut conn, 1) {
+        Ok(mut ck) => ck,
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != bookmark_list_entry);
+    assert!(bookmark_list_entry == bookmark_list_read_entry);
+    assert!(Some(incorrect_bookmark_list.clone()) != bookmark_list_read_entry);
+
+    // read by people id
+    let mut bookmark_list_read_by_id_entry =
+        match bookmark_lists::read_by_people_id(&mut conn, 3, 1, 0) {
+            Ok(mut ck) => ck.pop(),
+            Err(e) => return Err(e.into()),
+        };
+
+    assert!(None != bookmark_list_entry);
+    assert!(bookmark_list_entry == bookmark_list_read_entry);
+    assert!(Some(incorrect_bookmark_list.clone()) != bookmark_list_read_entry);
 
     Ok(())
 }
