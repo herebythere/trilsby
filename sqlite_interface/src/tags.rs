@@ -207,12 +207,12 @@ pub fn read_by_people_id(
             deleted_at IS NULL
             AND
             people_id = ?1
+        ORDER BY
+            id DESC
         LIMIT
             ?2
         OFFSET
             ?3
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,

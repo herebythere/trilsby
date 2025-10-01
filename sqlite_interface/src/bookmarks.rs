@@ -31,13 +31,13 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
 pub fn create(
     conn: &mut Connection,
     id: u64,
-    people_id: u64,
     url: &str,
+    people_id: u64,
 ) -> Result<Option<Bookmark>, String> {
     let mut stmt = match conn.prepare(
         "
         INSERT INTO bookmarks
-            (id, url. people_id)
+            (id, url, people_id)
         VALUES
             (?1, ?2, ?3)
         RETURNING
@@ -71,12 +71,13 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Bookma
             bookmarks
         WHERE
             deleted_at IS NULL
+        ORDER BY
+            id DESC
         LIMIT
             ?1
         OFFSET
             ?2
-        ORDER BY
-            id DESC",
+        ",
     ) {
         Ok(stmt) => stmt,
         _ => return Err("failed to read bookmark".to_string()),

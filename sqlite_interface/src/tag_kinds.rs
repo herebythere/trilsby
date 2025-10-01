@@ -62,7 +62,6 @@ pub fn create(
     Ok(None)
 }
 
-// limit offset
 pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<TagKind>, String> {
     let mut stmt = match conn.prepare(
         "
