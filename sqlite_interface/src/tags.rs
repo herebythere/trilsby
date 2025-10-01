@@ -78,16 +78,16 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
             tags
         WHERE
             deleted_at IS NULL
+        ORDER BY
+            id DESC
         LIMIT
             ?1
         OFFSET
             ?2
-        ORDER BY
-            id DESC
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("failed to read tags".to_string()),
+        Err(_e) => return Err("failed to read tags".to_string()),
     };
 
     let mut tag_iter = match stmt.query_map((limit, offset), get_entry_from_row) {

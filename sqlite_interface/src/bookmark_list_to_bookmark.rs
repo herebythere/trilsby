@@ -4,10 +4,10 @@ use type_flyweight::bookmark_lists::BookmarkListToBookmark;
 fn get_entry_from_row(row: &Row) -> Result<BookmarkListToBookmark, RusqliteError> {
     Ok(BookmarkListToBookmark {
         id: row.get(0)?,
-        people_id: row.get(1)?,
-        bookmark_list_id: row.get(2)?,
-        bookmark_id: row.get(3)?,
-        order_weight: row.get(4)?,
+        bookmark_list_id: row.get(1)?,
+        bookmark_id: row.get(2)?,
+        order_weight: row.get(3)?,
+        people_id: row.get(4)?,
         deleted_at: row.get(5)?,
     })
 }

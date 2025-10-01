@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct TagKind {
     pub id: u64,
     pub kind: String,
@@ -8,7 +8,7 @@ pub struct TagKind {
     pub deleted_at: Option<u64>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub struct Tag {
     pub id: u64,
     pub tag_kind_id: u64,
