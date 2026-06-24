@@ -1,25 +1,37 @@
 use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-use type_flyweight::Tag;
+use type_flyweight::tags::Tag;
+
+// Some odd conversions between u64 and i64 and back again.
+// Sqlite apparently converts a string to a number affinity.
+// If the number is too big it is a REAL or similar.
+// In this case we never go above 64bits.
+//
+// Takes an i64 witha number affinity and
+//
 
 fn get_entry_from_row(row: &Row) -> Result<Tag, RusqliteError> {
+    let id_i64: i64 = row.get(0)?;
+    let deleted_at_i64: Option<i64> = row.get(2)?;
+
+    let id: u64 = id_i64 as u64;
+    let deleted_at: Option<u64> = match deleted_at_i64 {
+        Some(val) => Some(val as u64),
+        None => None,
+    };
+
     Ok(Tag {
-        id: row.get(0)?,
-        tag_kind_id: row.get(1)?,
-        bookmark_id: row.get(2)?,
-        people_id: row.get(3)?,
-        deleted_at: row.get(4)?,
+        id,
+        title: row.get(1)?,
+        deleted_at,
     })
 }
 
 pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS tags (
-            id INTEGER PRIMARY KEY,
-            tag_kind_id INTEGER NOT NULL,
-            bookmark_id INTEGER NOT NULL,
-            people_id INTEGER NOT NULL,
-            deleted_at INTEGER,
-            UNIQUE (tag_kind_id, bookmark_id)
+            id UNSIGNED BIG INT PRIMARY KEY,
+            title TEXT NOT NULL UNIQUE,
+            deleted_at UNSIGNED BIG INT
         )",
         (),
     );
@@ -34,42 +46,42 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
 pub fn create(
     conn: &mut Connection,
     id: u64,
-    tag_kind_id: u64,
-    bookmark_id: u64,
-    people_id: u64,
+    // people_id: u64,
+    title: &str,
 ) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         INSERT INTO tags
-            (id, tag_kind_id, bookmark_id, people_id)
+            (id, title)
         VALUES
-            (?1, ?2, ?3, ?4)
+            (?1, ?2)
         RETURNING
             *
     ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("could not prepare a tags create statement".to_string()),
+        _ => return Err("Could not prepare a tags create statement".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map(
-        (id, tag_kind_id, bookmark_id, people_id),
-        get_entry_from_row,
-    ) {
-        Ok(tag_iter) => tag_iter,
-        Err(e) => return Err(e.to_string()),
-    };
+    let mut entry_iter =
+        match stmt.query_map((id.to_string(), title.to_string()), get_entry_from_row) {
+            Ok(entry_iter) => entry_iter,
+            Err(e) => return Err(e.to_string()),
+        };
 
-    if let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(tag) = entry_maybe {
-            return Ok(Some(tag));
+    if let Some(entry_maybe) = entry_iter.next() {
+        println!("{:?}", &entry_maybe);
+
+        if let Ok(entry) = entry_maybe {
+            println!("found something! {:?}", &entry);
+            return Ok(Some(entry));
         }
     }
 
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, String> {
+pub fn read(conn: &mut Connection, limit: u32, offset: u32) -> Result<Vec<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -87,30 +99,25 @@ pub fn read(conn: &mut Connection, limit: u64, offset: u64) -> Result<Vec<Tag>, 
         ",
     ) {
         Ok(stmt) => stmt,
-        Err(_e) => return Err("could not prepare a tags read statement".to_string()),
+        _ => return Err("could not prepare a tags read statement".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
-        Ok(tag_iter) => tag_iter,
+    let mut entry_iter = match stmt.query_map((limit, offset), get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
     let mut tags: Vec<Tag> = Vec::new();
-    while let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(tag) = entry_maybe {
-            tags.push(tag);
+    while let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
         }
     }
 
     Ok(tags)
 }
 
-pub fn read_by_tag_kind_id(
-    conn: &mut Connection,
-    tag_kind_id: u64,
-    limit: u64,
-    offset: u64,
-) -> Result<Vec<Tag>, String> {
+pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -120,41 +127,28 @@ pub fn read_by_tag_kind_id(
         WHERE
             deleted_at IS NULL
             AND
-            tag_kind_id = ?1
-        ORDER BY
-            id DESC
-        LIMIT
-            ?2
-        OFFSET
-            ?3
+            id = ?1
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("could not prepare a tags read_by_tag_kind_id statement".to_string()),
+        _ => return Err("could not prepare a tags read_by_id statement".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map((tag_kind_id, limit, offset), get_entry_from_row) {
-        Ok(tag_iter) => tag_iter,
+    let mut entry_iter = match stmt.query_map([id.to_string()], get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    let mut tags: Vec<Tag> = Vec::new();
-    if let Some(entry_maybe) = tag_iter.next() {
+    if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            tags.push(entry);
+            return Ok(Some(entry));
         }
     }
 
-    Ok(tags)
+    Ok(None)
 }
 
-// limit offset ascending descending
-pub fn read_by_bookmark_id(
-    conn: &mut Connection,
-    bookmark_id: u64,
-    limit: u64,
-    offset: u64,
-) -> Result<Vec<Tag>, String> {
+pub fn read_by_title(conn: &mut Connection, title: &str) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
         SELECT
@@ -164,74 +158,23 @@ pub fn read_by_bookmark_id(
         WHERE
             deleted_at IS NULL
             AND
-            bookmark_id = ?1
-        ORDER BY
-            id DESC
-        LIMIT
-            ?2
-        OFFSET
-            ?3
+            title = ?1
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("could not prepare a tags read_by_bookmark_id statement".to_string()),
+        _ => return Err("could not prepare a tags read_by_title statment".to_string()),
     };
 
-    let mut tag_iter = match stmt.query_map((bookmark_id, limit, offset), get_entry_from_row) {
-        Ok(tag_iter) => tag_iter,
+    let mut entry_iter = match stmt.query_map([title], get_entry_from_row) {
+        Ok(entry_iter) => entry_iter,
         Err(e) => return Err(e.to_string()),
     };
 
-    let mut tags: Vec<Tag> = Vec::new();
-    if let Some(entry_maybe) = tag_iter.next() {
+    if let Some(entry_maybe) = entry_iter.next() {
         if let Ok(entry) = entry_maybe {
-            tags.push(entry);
+            return Ok(Some(entry));
         }
     }
 
-    Ok(tags)
-}
-
-// limit offset ascending descending
-pub fn read_by_people_id(
-    conn: &mut Connection,
-    people_id: u64,
-    limit: u64,
-    offset: u64,
-) -> Result<Vec<Tag>, String> {
-    let mut stmt = match conn.prepare(
-        "
-        SELECT
-            *
-        FROM
-            tags
-        WHERE
-            deleted_at IS NULL
-            AND
-            people_id = ?1
-        ORDER BY
-            id DESC
-        LIMIT
-            ?2
-        OFFSET
-            ?3
-        ",
-    ) {
-        Ok(stmt) => stmt,
-        _ => return Err("could not prepare a tags read_by_people_id statement".to_string()),
-    };
-
-    let mut tag_iter = match stmt.query_map((people_id, limit, offset), get_entry_from_row) {
-        Ok(tag_iter) => tag_iter,
-        Err(e) => return Err(e.to_string()),
-    };
-
-    let mut tags: Vec<Tag> = Vec::new();
-    if let Some(entry_maybe) = tag_iter.next() {
-        if let Ok(entry) = entry_maybe {
-            tags.push(entry);
-        }
-    }
-
-    Ok(tags)
+    Ok(None)
 }
