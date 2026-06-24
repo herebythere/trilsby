@@ -11,7 +11,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // create
-    let tag_entry = match tags::create(&mut conn, 10, /* 3, */ "public") {
+    let tag_entry = match tags::create(&mut conn, 10, 3, "public") {
         Ok(ck) => ck,
         Err(e) => {
             assert!(false, "failed to create tag entry");
@@ -38,13 +38,22 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tag_entry == tag_read_by_kind_id_entry);
 
     // read by people id
-    // let mut tag_read_by_people_id_entry = match tags::read_by_people_id(&mut conn, 4, 1, 0) {
-    //     Ok(mut ck) => ck.pop(),
-    //     Err(e) => return Err(e.into()),
-    // };
+    let mut tag_read_by_people_id_entry = match tags::read_by_people_id(&mut conn, 3, 1, 0) {
+        Ok(mut ck) => ck.pop(),
+        Err(e) => return Err(e.into()),
+    };
 
-    // assert!(None != tag_entry);
-    // assert!(tag_entry == tag_read_by_people_id_entry);
+    assert!(None != tag_entry);
+    assert!(tag_entry == tag_read_by_people_id_entry);
+
+    // read by people id
+    let mut tag_read_by_title_entry = match tags::read_by_title(&mut conn, "public") {
+        Ok(mut ck) => ck,
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != tag_entry);
+    assert!(tag_entry == tag_read_by_title_entry);
 
     Ok(())
 }

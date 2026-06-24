@@ -6,22 +6,28 @@ use type_flyweight::tags::Tag;
 // If the number is too big it is a REAL or similar.
 // In this case we never go above 64bits.
 //
-// Takes an i64 witha number affinity and
+// Takes an i64 with a number affinity and cast to u64.
+// Probably more proper to parse a string, but this introduces
+// Errors and i am laaazy right now.
+//
+// But this should be valid?
 //
 
 fn get_entry_from_row(row: &Row) -> Result<Tag, RusqliteError> {
     let id_i64: i64 = row.get(0)?;
-    let deleted_at_i64: Option<i64> = row.get(2)?;
+    let people_id_i64: i64 = row.get(1)?;
+    let title: String = row.get(2)?;
+    let deleted_at_i64: Option<i64> = row.get(3)?;
 
-    let id: u64 = id_i64 as u64;
     let deleted_at: Option<u64> = match deleted_at_i64 {
         Some(val) => Some(val as u64),
         None => None,
     };
 
     Ok(Tag {
-        id,
-        title: row.get(1)?,
+        id: id_i64 as u64,
+        people_id: people_id_i64 as u64,
+        title,
         deleted_at,
     })
 }
@@ -30,6 +36,7 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     let results = conn.execute(
         "CREATE TABLE IF NOT EXISTS tags (
             id UNSIGNED BIG INT PRIMARY KEY,
+            people_id UNSIGNED BIT INT NOT NULL,
             title TEXT NOT NULL UNIQUE,
             deleted_at UNSIGNED BIG INT
         )",
@@ -43,18 +50,21 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     Ok(())
 }
 
+// Make all text lowercase
 pub fn create(
     conn: &mut Connection,
     id: u64,
-    // people_id: u64,
+    people_id: u64,
     title: &str,
 ) -> Result<Option<Tag>, String> {
+    // might need to confirm alphanumeric
+
     let mut stmt = match conn.prepare(
         "
         INSERT INTO tags
-            (id, title)
+            (id, people_id, title)
         VALUES
-            (?1, ?2)
+            (?1, ?2, lower(?3))
         RETURNING
             *
     ",
@@ -63,11 +73,13 @@ pub fn create(
         _ => return Err("Could not prepare a tags create statement".to_string()),
     };
 
-    let mut entry_iter =
-        match stmt.query_map((id.to_string(), title.to_string()), get_entry_from_row) {
-            Ok(entry_iter) => entry_iter,
-            Err(e) => return Err(e.to_string()),
-        };
+    let mut entry_iter = match stmt.query_map(
+        (id.to_string(), people_id.to_string(), title.to_string()),
+        get_entry_from_row,
+    ) {
+        Ok(entry_iter) => entry_iter,
+        Err(e) => return Err(e.to_string()),
+    };
 
     if let Some(entry_maybe) = entry_iter.next() {
         println!("{:?}", &entry_maybe);
@@ -125,9 +137,9 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
         FROM
             tags
         WHERE
-            deleted_at IS NULL
-            AND
             id = ?1
+            AND
+            deleted_at IS NULL
         ",
     ) {
         Ok(stmt) => stmt,
@@ -148,6 +160,50 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
     Ok(None)
 }
 
+pub fn read_by_people_id(
+    conn: &mut Connection,
+    people_id: u64,
+    limit: u32,
+    offset: u32,
+) -> Result<Vec<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        SELECT
+            *
+        FROM
+            tags
+        WHERE
+            people_id = ?1
+            AND
+            deleted_at IS NULL
+        ORDER BY
+            id DESC
+        LIMIT
+            ?2
+        OFFSET
+            ?3
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("could not prepare a tags read statement".to_string()),
+    };
+
+    let mut entry_iter =
+        match stmt.query_map((people_id.to_string(), limit, offset), get_entry_from_row) {
+            Ok(entry_iter) => entry_iter,
+            Err(e) => return Err(e.to_string()),
+        };
+
+    let mut tags: Vec<Tag> = Vec::new();
+    while let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
+        }
+    }
+
+    Ok(tags)
+}
+
 pub fn read_by_title(conn: &mut Connection, title: &str) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -156,9 +212,9 @@ pub fn read_by_title(conn: &mut Connection, title: &str) -> Result<Option<Tag>, 
         FROM
             tags
         WHERE
-            deleted_at IS NULL
-            AND
             title = ?1
+            AND
+            deleted_at IS NULL
         ",
     ) {
         Ok(stmt) => stmt,
