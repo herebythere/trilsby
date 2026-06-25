@@ -50,7 +50,6 @@ pub fn create_table(conn: &mut Connection) -> Result<(), String> {
     Ok(())
 }
 
-// Make all text lowercase
 pub fn create(
     conn: &mut Connection,
     id: u64,
