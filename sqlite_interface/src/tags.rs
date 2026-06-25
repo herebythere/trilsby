@@ -296,32 +296,39 @@ pub fn delete(conn: &mut Connection, id: u64, deleted_at: u64) -> Result<Option<
     Ok(None)
 }
 
+// add a limit offset
 pub fn dangerously_delete_stale_entries(
     conn: &mut Connection,
-    id: u64,
     now: u32,
     offset: u32,
+    limit: u32,
 ) -> Result<Vec<Tag>, String> {
+    // TODO:
+    // Sqlite seems to have a LIMIT clause on DELETE.
+    // Instead, two queries are used below.
+    // Upgrade when possible.
+
     let mut stmt = match conn.prepare(
         "
         DELETE FROM
             tags
-        WHERE
-            id = ?1
-            AND
+        WHERE id IN (
+            SELECT id FROM tags WHERE
             deleted_at IS NOT NULL
             AND
-            deleted_at + ?2 < ?3
+            deleted_at + ?1 < ?2
+            LIMIT ?3
+        )
         RETURNING
             *
         ",
     ) {
         Ok(stmt) => stmt,
-        _ => return Err("could not prepare a tags read_by_title statment".to_string()),
+        _ => return Err("could not prepare a tags dangerously delete statment".to_string()),
     };
 
     let mut entry_iter = match stmt.query_map(
-        [id.to_string(), offset.to_string(), now.to_string()],
+        [offset.to_string(), now.to_string(), limit.to_string()],
         get_entry_from_row,
     ) {
         Ok(entry_iter) => entry_iter,

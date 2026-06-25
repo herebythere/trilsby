@@ -70,7 +70,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
 
     // dangerously delete
     let mut tag_dangerous_delete_entry =
-        match tags::dangerously_delete_stale_entries(&mut conn, 10, 52, 10) {
+        match tags::dangerously_delete_stale_entries(&mut conn, 52, 10, 10) {
             Ok(mut ck) => ck.pop(),
             Err(e) => return Err(e.into()),
         };
