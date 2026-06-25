@@ -93,9 +93,35 @@ pub fn create(
     Ok(None)
 }
 
-pub fn read(conn: &mut Connection, limit: u32, offset: u32) -> Result<Vec<Tag>, String> {
-    let mut stmt = match conn.prepare(
+pub fn read(
+    conn: &mut Connection,
+    limit: u32,
+    offset: u32,
+    order: &str,
+) -> Result<Vec<Tag>, String> {
+    // Rather than dangerously compose templates,
+    // pick from a pregenerated one. It's copy paste basically.
+    // But it should be a little safer than injections.
+
+    let tempalte = match order {
+        "ASC" => {
+            "
+        SELECT
+            *
+        FROM
+            tags
+        WHERE
+            deleted_at IS NULL
+        ORDER BY
+            id ASC
+        LIMIT
+            ?1
+        OFFSET
+            ?2
         "
+        }
+        "DESC" => {
+            "
         SELECT
             *
         FROM
@@ -108,8 +134,12 @@ pub fn read(conn: &mut Connection, limit: u32, offset: u32) -> Result<Vec<Tag>, 
             ?1
         OFFSET
             ?2
-        ",
-    ) {
+        "
+        }
+        _ => return Err("invalid order property given in read statement".to_string()),
+    };
+
+    let mut stmt = match conn.prepare(tempalte) {
         Ok(stmt) => stmt,
         _ => return Err("could not prepare a tags read statement".to_string()),
     };

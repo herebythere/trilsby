@@ -20,7 +20,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // read
-    let mut tag_read_entry = match tags::read(&mut conn, 1, 0) {
+    let mut tag_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {
         Ok(mut ck) => ck.pop(),
         Err(e) => return Err(e.into()),
     };
