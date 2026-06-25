@@ -18,6 +18,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
             return Err(e.into());
         }
     };
+    assert!(None != tag_entry);
 
     // read
     let mut tag_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {
@@ -25,7 +26,6 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => return Err(e.into()),
     };
 
-    assert!(None != tag_entry);
     assert!(tag_entry == tag_read_entry);
 
     // read by tag kind id
@@ -34,7 +34,6 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => return Err(e.into()),
     };
 
-    assert!(None != tag_entry);
     assert!(tag_entry == tag_read_by_kind_id_entry);
 
     // read by people id
@@ -43,17 +42,48 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
         Err(e) => return Err(e.into()),
     };
 
-    assert!(None != tag_entry);
     assert!(tag_entry == tag_read_by_people_id_entry);
 
-    // read by people id
+    // read by title
     let mut tag_read_by_title_entry = match tags::read_by_title(&mut conn, "public") {
         Ok(mut ck) => ck,
         Err(e) => return Err(e.into()),
     };
 
-    assert!(None != tag_entry);
     assert!(tag_entry == tag_read_by_title_entry);
+
+    // soft delete by id
+    let mut tag_soft_delete_entry = match tags::delete(&mut conn, 10, 42) {
+        Ok(mut ck) => ck,
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None != tag_soft_delete_entry);
+
+    match (tag_entry.clone(), tag_soft_delete_entry.clone()) {
+        (Some(entry), Some(soft_entry)) => {
+            assert!(entry.id == soft_entry.id);
+            assert!(None != soft_entry.deleted_at);
+        }
+        _ => assert!(false, "entries to delete do non exist"),
+    }
+
+    // dangerously delete
+    let mut tag_dangerous_delete_entry =
+        match tags::dangerously_delete_stale_entries(&mut conn, 10, 52, 10) {
+            Ok(mut ck) => ck.pop(),
+            Err(e) => return Err(e.into()),
+        };
+
+    assert!(None != tag_dangerous_delete_entry);
+
+    // read, or fail to read, deleted
+    let mut tag_re_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {
+        Ok(mut ck) => ck.pop(),
+        Err(e) => return Err(e.into()),
+    };
+
+    assert!(None == tag_re_read_entry);
 
     Ok(())
 }

@@ -263,3 +263,77 @@ pub fn read_by_title(conn: &mut Connection, title: &str) -> Result<Option<Tag>, 
 
     Ok(None)
 }
+
+pub fn delete(conn: &mut Connection, id: u64, deleted_at: u64) -> Result<Option<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        UPDATE
+            tags
+        SET
+            deleted_at = ?1
+        WHERE
+            id = ?2
+        RETURNING
+            *
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("could not prepare a tags read_by_title statment".to_string()),
+    };
+
+    let mut entry_iter =
+        match stmt.query_map([deleted_at.to_string(), id.to_string()], get_entry_from_row) {
+            Ok(entry_iter) => entry_iter,
+            Err(e) => return Err(e.to_string()),
+        };
+
+    if let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            return Ok(Some(entry));
+        }
+    }
+
+    Ok(None)
+}
+
+pub fn dangerously_delete_stale_entries(
+    conn: &mut Connection,
+    id: u64,
+    now: u32,
+    offset: u32,
+) -> Result<Vec<Tag>, String> {
+    let mut stmt = match conn.prepare(
+        "
+        DELETE FROM
+            tags
+        WHERE
+            id = ?1
+            AND
+            deleted_at IS NOT NULL
+            AND
+            deleted_at + ?2 < ?3
+        RETURNING
+            *
+        ",
+    ) {
+        Ok(stmt) => stmt,
+        _ => return Err("could not prepare a tags read_by_title statment".to_string()),
+    };
+
+    let mut entry_iter = match stmt.query_map(
+        [id.to_string(), offset.to_string(), now.to_string()],
+        get_entry_from_row,
+    ) {
+        Ok(entry_iter) => entry_iter,
+        Err(e) => return Err(e.to_string()),
+    };
+
+    let mut tags: Vec<Tag> = Vec::new();
+    while let Some(entry_maybe) = entry_iter.next() {
+        if let Ok(entry) = entry_maybe {
+            tags.push(entry);
+        }
+    }
+
+    Ok(tags)
+}
