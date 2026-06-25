@@ -71,11 +71,11 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     // dangerously delete
     let mut tag_dangerous_delete_entry =
         match tags::dangerously_delete_stale_entries(&mut conn, 52, 10, 10) {
-            Ok(mut ck) => ck.pop(),
+            Ok(ck) => ck,
             Err(e) => return Err(e.into()),
         };
 
-    assert!(None != tag_dangerous_delete_entry);
+    assert!(0 != tag_dangerous_delete_entry.len());
 
     // read, or fail to read, deleted
     let mut tag_re_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {

@@ -92,6 +92,7 @@ pub fn create(
     Ok(None)
 }
 
+// params
 pub fn read(
     conn: &mut Connection,
     limit: u32,
@@ -189,6 +190,7 @@ pub fn read_by_id(conn: &mut Connection, id: u64) -> Result<Option<Tag>, String>
     Ok(None)
 }
 
+// params
 pub fn read_by_people_id(
     conn: &mut Connection,
     people_id: u64,
@@ -264,6 +266,7 @@ pub fn read_by_title(conn: &mut Connection, title: &str) -> Result<Option<Tag>, 
     Ok(None)
 }
 
+// params
 pub fn delete(conn: &mut Connection, id: u64, deleted_at: u64) -> Result<Option<Tag>, String> {
     let mut stmt = match conn.prepare(
         "
@@ -297,6 +300,7 @@ pub fn delete(conn: &mut Connection, id: u64, deleted_at: u64) -> Result<Option<
 }
 
 // add a limit offset
+// params
 pub fn dangerously_delete_stale_entries(
     conn: &mut Connection,
     now: u32,
@@ -313,11 +317,16 @@ pub fn dangerously_delete_stale_entries(
         DELETE FROM
             tags
         WHERE id IN (
-            SELECT id FROM tags WHERE
-            deleted_at IS NOT NULL
-            AND
-            deleted_at + ?1 < ?2
-            LIMIT ?3
+            SELECT
+                id
+            FROM 
+                tags 
+            WHERE
+                deleted_at IS NOT NULL
+                AND
+                deleted_at + ?1 < ?2
+            LIMIT
+                ?3
         )
         RETURNING
             *
