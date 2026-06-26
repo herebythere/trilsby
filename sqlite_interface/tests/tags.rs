@@ -21,7 +21,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(None != tag_entry);
 
     // read
-    let mut tag_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {
+    let tag_read_entry = match tags::read(&mut conn, 1, 0, "DESC") {
         Ok(mut ck) => ck.pop(),
         Err(e) => return Err(e.into()),
     };
@@ -29,7 +29,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tag_entry == tag_read_entry);
 
     // read by tag kind id
-    let mut tag_read_by_kind_id_entry = match tags::read_by_id(&mut conn, 10) {
+    let tag_read_by_kind_id_entry = match tags::read_by_id(&mut conn, 10) {
         Ok(ck) => ck,
         Err(e) => return Err(e.into()),
     };
@@ -37,7 +37,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tag_entry == tag_read_by_kind_id_entry);
 
     // read by people id
-    let mut tag_read_by_people_id_entry = match tags::read_by_people_id(&mut conn, 3, 1, 0) {
+    let tag_read_by_people_id_entry = match tags::read_by_people_id(&mut conn, 3, 1, 0) {
         Ok(mut ck) => ck.pop(),
         Err(e) => return Err(e.into()),
     };
@@ -45,7 +45,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tag_entry == tag_read_by_people_id_entry);
 
     // read by title
-    let mut tag_read_by_title_entry = match tags::read_by_title(&mut conn, "public") {
+    let tag_read_by_title_entry = match tags::read_by_title(&mut conn, "public") {
         Ok(mut ck) => ck,
         Err(e) => return Err(e.into()),
     };
@@ -53,7 +53,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     assert!(tag_entry == tag_read_by_title_entry);
 
     // soft delete by id
-    let mut tag_soft_delete_entry = match tags::delete(&mut conn, 10, 42) {
+    let tag_soft_delete_entry = match tags::delete(&mut conn, 10, 42) {
         Ok(mut ck) => ck,
         Err(e) => return Err(e.into()),
     };
@@ -69,7 +69,7 @@ fn crud_operations() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // dangerously delete
-    let mut tag_dangerous_delete_entry =
+    let tag_dangerous_delete_entry =
         match tags::dangerously_delete_stale_entries(&mut conn, 52, 10, 10) {
             Ok(ck) => ck,
             Err(e) => return Err(e.into()),

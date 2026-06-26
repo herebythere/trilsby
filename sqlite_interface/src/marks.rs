@@ -1,15 +1,14 @@
-// use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-// use type_flyweight::Bookmark;
+use rusqlite::{Connection, Error as RusqliteError, Result, Row};
+use type_flyweight::marks::Mark;
 
-// fn get_entry_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
-
-//     Ok(Bookmark {
-//         id: row.get(0)?,
-//         url: row.get(1)?,
-//         people_id: row.get(2)?,
-//         deleted_at: row.get(3)?,
-//     })
-// }
+fn get_entry_from_row(row: &Row) -> Result<Bookmark, RusqliteError> {
+    Ok(Mark {
+        id: row.get(0)?,
+        url: row.get(2)?,
+		updated_at: row.get(5)?,
+        deleted_at: row.get(6)?,
+    })
+}
 
 // pub fn create_table(conn: &mut Connection) -> Result<(), String> {
 //     // limit url length by 2048
