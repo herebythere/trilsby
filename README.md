@@ -28,3 +28,8 @@ trilsby.com/url/f39dkls/
 // Users could eventually backup their journeys. Go to different sites.
 
 // Okay this is kinda alright
+
+
+// Provide a url, no .ai or .xxx ban a few domains.
+// Scrub initial html for basics like anchors. Maybe articles. Skip images.
+// Show as a graph

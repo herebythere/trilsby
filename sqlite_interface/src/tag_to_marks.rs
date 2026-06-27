@@ -1,15 +1,15 @@
-// use rusqlite::{Connection, Error as RusqliteError, Result, Row};
-// use type_flyweight::Tag;
+use rusqlite::{Connection, Error as RusqliteError, Result, Row};
+use type_flyweight::Tag;
 
-// fn get_entry_from_row(row: &Row) -> Result<Tag, RusqliteError> {
-//     Ok(Tag {
-//         id: row.get(0)?,
-//         tag_kind_id: row.get(1)?,
-//         bookmark_id: row.get(2)?,
-//         people_id: row.get(3)?,
-//         deleted_at: row.get(4)?,
-//     })
-// }
+fn get_entry_from_row(row: &Row) -> Result<Tag, RusqliteError> {
+    Ok(Tag {
+        id: row.get(0)?,
+        tag_id: row.get(1)?,
+        mark_id: row.get(2)?,
+        people_id: row.get(3)?,
+        deleted_at: row.get(4)?,
+    })
+}
 
 // pub fn create_table(conn: &mut Connection) -> Result<(), String> {
 //     let results = conn.execute(

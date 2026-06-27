@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 pub struct Mark {
     pub id: u64,
     pub url: String,
-    pub updated_at: u64,
+    pub last_successful_request_at: u64,
+    pub requested_at: u64,
+    pub request_status: String,
     pub deleted_at: Option<u64>,
 }
 
